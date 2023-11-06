@@ -1,0 +1,18 @@
+$navbar-height: 60px;
+$navbar-height-mobile: 50px;
+
+.navbar {
+    height: $navbar-height;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: #fff;
+    box-shadow: rgba(0, 0, 0, 0.09) 8px 0px 8px 0px;
+    display: flex;
+    align-items: center;
+
+    @media (max-width: 300px) {
+        height: $navbar-height-mobile;
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+}

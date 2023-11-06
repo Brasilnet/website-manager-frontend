@@ -1,0 +1,21 @@
+.login {
+    height: 100vh;
+    overflow: hidden;
+
+    .logo {
+        width: 100%;
+        height: 60%;
+    }
+
+    .forgot-password {
+        &:not(&.disabled) {
+            color: #000;
+            cursor: pointer;
+        }
+
+        &.disabled {
+            color: #a0a0a0;
+            cursor: not-allowed;
+        }
+    }
+}

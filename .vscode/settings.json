@@ -1,0 +1,12 @@
+{
+    "editor.wordBasedSuggestions": true,
+    "files.exclude": {
+        "**/.classpath": true,
+        "**/.factorypath": true,
+        "**/.idea": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.vscode": true,
+        "**/node_modules": true
+    }
+}

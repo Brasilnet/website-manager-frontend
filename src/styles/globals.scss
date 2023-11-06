@@ -1,0 +1,15 @@
+$enable-negative-margins: true;
+@import "./defaults.scss";
+@import "~bootstrap/scss/bootstrap";
+@import "~nprogress/nprogress.css";
+@import "bootstrap_custom";
+// Pages styles
+@import "./pages/login";
+// Layout
+@import "./layout/sidebar.scss";
+@import "./layout/main-container.scss";
+@import "./layout/navbar.scss";
+@import "./layout/page-content.scss";
+// Components
+@import "./components/button-ms.scss";
+@import "./components/navbar-dropdown-menu.scss";
