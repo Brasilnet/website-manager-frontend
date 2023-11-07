@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import SideBar from "@components/SideBar";
 import { useRouter } from "next/router";
-import { Button } from "react-bootstrap";
+import { Breadcrumb, Button } from "react-bootstrap";
 import sidebar from "src/config/sidebar";
 import NavBar from "@components/NavBar";
 import { FaAlignRight, FaBars } from "react-icons/fa";
@@ -39,10 +39,12 @@ export default function MasterLayout({ children }: Children) {
             {sideBarIsOpen ? <FaAlignRight size={20} /> : <FaBars size={20} />}
           </Button>
           <div className="d-flex flex-end flex-row">
-            <NavBarDropdownMenu user={user}/>
+            <NavBarDropdownMenu user={user} />
           </div>
         </NavBar>
-        <div className="page-content">{children}</div>
+        <div className="page-content">
+          {children}
+        </div>
       </div>
     </main>
   );
