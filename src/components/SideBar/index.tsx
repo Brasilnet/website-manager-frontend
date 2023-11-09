@@ -168,7 +168,7 @@ export default function SideBar({
           {items.map((item, index) => (
             <SideBarItem
               {...item}
-              key={item.href}
+              key={`${item.title}-${index}`}
               isOpen={index === openItemId}
               onToggle={() => handleToggle(index)}
               isSidebarOpen={isOpen}
