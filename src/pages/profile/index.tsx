@@ -9,6 +9,7 @@ import { IUser } from "src/interfaces/IUser";
 import { FieldValues, useForm } from "react-hook-form";
 import handleAxiosError from "src/utils/handleAxiosError";
 import { toast } from "react-toastify";
+import { closeModal, showModal } from "src/events";
 
 export default function Profile(): JSX.Element {
   const [disableUpdateButton, setDisableUpdateButton] = useState<boolean>(false);
@@ -29,7 +30,7 @@ export default function Profile(): JSX.Element {
     }
   }, [user]);
 
-  const onSubmit = async ({ name }: FieldValues): Promise<void> => {
+  const updateUser = async ({ name }: FieldValues): Promise<void> => {
     try {
       const response = await ApiFetch.put('/user/update', { 
         name,
@@ -40,6 +41,21 @@ export default function Profile(): JSX.Element {
     } catch (error: unknown) {
       handleAxiosError(error, setError);
     } 
+
+    closeModal();
+  }
+
+  const onSubmit = (props: FieldValues): void => {
+    showModal({
+      title: 'Atualizar informações de usuário',
+      body: 'Tem certeza de que deseja atualizar as informações para esse usuário?',
+      buttons: (
+        <>
+          <Button variant="primary" onClick={() => updateUser(props)}>Atualizar</Button>
+          <Button variant="secondary" onClick={closeModal}>Cancelar</Button>
+        </>
+      )
+    })
   };
 
   return (
@@ -78,7 +94,7 @@ export default function Profile(): JSX.Element {
                     <Form.Group className="mt-3">
                       <Button 
                         disabled={disableUpdateButton}
-                        className="btn-primary-ms" 
+                        variant="primary"
                         type="submit">
                         Atualizar informações
                       </Button>

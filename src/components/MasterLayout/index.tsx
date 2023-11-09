@@ -1,26 +1,53 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import SideBar from "@components/SideBar";
 import { useRouter } from "next/router";
-import { Breadcrumb, Button } from "react-bootstrap";
+import { Breadcrumb, Button, Modal } from "react-bootstrap";
 import sidebar from "src/config/sidebar";
 import NavBar from "@components/NavBar";
 import { FaAlignRight, FaBars } from "react-icons/fa";
 import NavBarDropdownMenu from "@components/NavBar/NavBarDropdownMenu";
 import { AuthContext } from "src/contexts/AuthContext";
+import emitter from "src/events/emitter";
 
 interface Children {
   children?: JSX.Element | JSX.Element[] | null;
 }
 
+interface IModal {
+  visible: boolean;
+  title: string | null;
+  body: string | JSX.Element | null;
+  buttons: JSX.Element | JSX.Element[] | null;
+}
+
 export default function MasterLayout({ children }: Children) {
-  const [sideBarIsOpen, setSideBarIsOpen] = useState(false);
+  const [isClient, setIsClient] = useState<boolean>(false);
+  const [sideBarIsOpen, setSideBarIsOpen] = useState<boolean>(false);
+  const [modal, setModal] = useState<IModal>({
+    visible: false,
+    title: null,
+    body: null,
+    buttons: null,
+  });
 
   const router = useRouter();
   const { user } = useContext(AuthContext);
 
-  const showNavbarOnRoutes = ["/dashboard"];
+  useEffect(() => {
+    setIsClient(true);
+
+    emitter.addListener('modal', setModal);
+    emitter.addListener('close-modal', handleCloseModal);
+  }, []);
 
   const toggleSideBar = () => setSideBarIsOpen(!sideBarIsOpen);
+
+  const handleCloseModal = () => setModal({
+    visible: false,
+    title: null,
+    body: null,
+    buttons: null,
+  });
 
   return (
     <main className="overflow-hidden d-flex flex-row">
@@ -33,7 +60,8 @@ export default function MasterLayout({ children }: Children) {
       <div className="main-container">
         <NavBar>
           <Button
-            className="btn-sidebar btn-primary-ms"
+            variant="primary"
+            className="btn-sidebar"
             onClick={toggleSideBar}
           >
             {sideBarIsOpen ? <FaAlignRight size={20} /> : <FaBars size={20} />}
@@ -42,10 +70,21 @@ export default function MasterLayout({ children }: Children) {
             <NavBarDropdownMenu user={user} />
           </div>
         </NavBar>
-        <div className="page-content">
-          {children}
-        </div>
+        <div className="page-content">{children}</div>
       </div>
+      {isClient && (
+        <Modal show={modal.visible} onHide={handleCloseModal} animation={false} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>{modal.title}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {typeof (modal.body) === 'string' ? <span>{modal.body}</span> : modal.body}
+          </Modal.Body>
+          <Modal.Footer>
+            {modal.buttons ? modal.buttons : <Button variant="secondary" onClick={handleCloseModal}>OK</Button>}
+          </Modal.Footer>
+        </Modal>
+      )}
     </main>
   );
 }
