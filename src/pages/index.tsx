@@ -9,6 +9,7 @@ import { IUser } from 'src/interfaces/IUser';
 
 export default function Dashboard():JSX.Element {
     const { user } = useContext(AuthContext);
+
     return (
         <MasterLayout>
             <Card>

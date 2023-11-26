@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { MasterLayout } from "@components";
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import { Button, Card, Col, Form, Modal, Row } from "react-bootstrap";
 import { AuthContext } from "src/contexts/AuthContext";
 import { GetServerSideProps } from "next";
 import { parseCookies } from "nookies";
@@ -13,7 +13,8 @@ import { closeModal, showModal } from "src/events";
 
 export default function Profile(): JSX.Element {
   const [disableUpdateButton, setDisableUpdateButton] = useState<boolean>(false);
-  const { user } = useContext(AuthContext);
+  const [modalChangePassword, setModalChangePassword] = useState<boolean>(false);
+  const { user, signOut } = useContext(AuthContext);
 
   const {
     register,
@@ -45,6 +46,21 @@ export default function Profile(): JSX.Element {
     closeModal();
   }
 
+  const changePassword = async ({ currentPassword, password, confirmPassword }: FieldValues): Promise<void> => {
+    try {
+      const response = await ApiFetch.post('/user/changePassword', { 
+        currentPassword,
+        password,
+        confirmPassword,
+      });
+
+      toast(response.data.message, { type: 'success' });
+      signOut();
+    } catch (error: unknown) {
+      handleAxiosError(error, setError);
+    } 
+  }
+
   const onSubmit = (props: FieldValues): void => {
     showModal({
       title: 'Atualizar informações de usuário',
@@ -58,54 +74,123 @@ export default function Profile(): JSX.Element {
     })
   };
 
+  const toggleModalChangePassword = () => setModalChangePassword(!modalChangePassword);
+
+  const ModalChangePassword = () => {
+    return (
+      <Modal
+        show={modalChangePassword}
+        onHide={toggleModalChangePassword}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Redefinir senha</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmit(changePassword)}>
+            <Form.Group>
+              <Form.Label>Senha atual</Form.Label>
+              <Form.Control
+                type="password"
+                {...register("currentPassword")}
+              />
+              {errors?.currentPassword && (
+                <Form.Text className="text-danger">
+                  {errors.currentPassword?.message?.toString()}
+                </Form.Text>
+              )}
+            </Form.Group>
+            <Form.Group className="mt-2">
+              <Form.Label>Nova senha</Form.Label>
+              <Form.Control
+                type="password"
+                {...register("password")}
+              />
+              {errors?.password && (
+                <Form.Text className="text-danger">
+                  {errors.password?.message?.toString()}
+                </Form.Text>
+              )}
+            </Form.Group>
+            <Form.Group className="mt-2">
+              <Form.Label>Confirme a nova senha</Form.Label>
+              <Form.Control
+                type="password"
+                {...register("confirmPassword")}
+              />
+              {errors?.confirmPassword && (
+                <Form.Text className="text-danger">
+                  {errors.confirmPassword?.message?.toString()}
+                </Form.Text>
+              )}
+            </Form.Group>
+            <Form.Group className="mt-2">
+              <Form.Text>Ao <strong>Redefinir</strong> sua senha, você será redirecionado à tela de login para logar-se novamente.</Form.Text>
+            </Form.Group>
+            <Form.Group className="mt-2 d-flex justify-content-end">
+              <Button type="submit" variant="primary">
+                Redefinir
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={toggleModalChangePassword}
+                className="mx-2"
+              >
+                Cancelar
+              </Button>
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+      </Modal>
+    );
+  }
+
   return (
     <MasterLayout>
-      <Row>
-        <Col className="col-12 col-md-6">
-          <Card>
-            <Card.Header>Meu perfil</Card.Header>
-            <Card.Body>
-              <Row>
-                <Col className="col-12 col-md-10 col-lg-6">
-                  <Form onSubmit={handleSubmit(onSubmit)}>
-                    <Form.Group>
-                      <Form.Label>Nome de usuário</Form.Label>
-                      <Form.Control
-                        type="text"
-                        placeholder="João Silva"
-                        {...register("name")}
-                      />
-                      {errors?.name && <Form.Text className="text-danger">{errors.name?.message?.toString()}</Form.Text>}
-                    </Form.Group>
-                    <Form.Group className="mt-2">
-                      <Form.Label>Endereço de email</Form.Label>
-                      <Form.Control
-                        disabled
-                        type="email"
-                        placeholder="exemplo@dominio.com"
-                        {...register("email")}
-                      />
-                    </Form.Group>
-                    <Form.Group className="mt-2">
-                      <Button variant="dark" className="w-100" type="button">
-                        Redefinir senha
-                      </Button>
-                    </Form.Group>
-                    <Form.Group className="mt-3">
-                      <Button 
-                        disabled={disableUpdateButton}
-                        variant="primary"
-                        type="submit">
-                        Atualizar informações
-                      </Button>
-                    </Form.Group>
-                  </Form>
-                </Col>
-              </Row>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+      <Card>
+        <Card.Header>Meu perfil</Card.Header>
+        <Card.Body>
+          <Row>
+            <Col className="col-12 col-md-10 col-lg-6">
+              <Form onSubmit={handleSubmit(onSubmit)}>
+                <Form.Group>
+                  <Form.Label>Nome de usuário</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="João Silva"
+                    {...register("name")}
+                  />
+                  {errors?.name && <Form.Text className="text-danger">{errors.name?.message?.toString()}</Form.Text>}
+                </Form.Group>
+                <Form.Group className="mt-2">
+                  <Form.Label>Endereço de email</Form.Label>
+                  <Form.Control
+                    disabled
+                    type="email"
+                    placeholder="exemplo@dominio.com"
+                    {...register("email")}
+                  />
+                </Form.Group>
+                <Form.Group className="mt-2">
+                  <Button variant="dark" className="w-100" type="button" onClick={toggleModalChangePassword}>
+                    Redefinir senha
+                  </Button>
+                </Form.Group>
+                <Form.Group className="mt-3">
+                  <Button 
+                    disabled={disableUpdateButton}
+                    variant="primary"
+                    type="submit">
+                    Atualizar informações
+                  </Button>
+                </Form.Group>
+              </Form>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
+      <ModalChangePassword />
     </MasterLayout>
   );
 }

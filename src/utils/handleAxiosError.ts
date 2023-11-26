@@ -8,10 +8,9 @@ interface ErrorResponse {
   errorMessage?: string;
 }
 
-
 export default function handleAxiosError(
   error: unknown,
-  setError: UseFormSetError<FieldValues>,
+  setError?: UseFormSetError<FieldValues>,
   setShowAlert?: React.Dispatch<React.SetStateAction<IShowAlert | null>>
 ): void {
   if (axios.isAxiosError(error)) {
@@ -19,7 +18,7 @@ export default function handleAxiosError(
     const response = axiosError.response;
 
     // Validations (Bad-Request)
-    if (response && response.status === 400) {
+    if (response && response.status === 400 && setError) {
       const responseErrors = response.data.errors;
       for (const field in responseErrors) {
         if (responseErrors.hasOwnProperty(field)) {
@@ -34,6 +33,14 @@ export default function handleAxiosError(
 
     // Unauthorized
     if (response && response.status === 401) {
+      setShowAlert ? setShowAlert({
+        visible: true,
+        message: response.data.errorMessage,
+      }) : toast(response.data.errorMessage, { type: 'error' });
+    }
+
+    // Not Found
+    if (response && response.status === 404) {
       setShowAlert ? setShowAlert({
         visible: true,
         message: response.data.errorMessage,

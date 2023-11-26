@@ -31,6 +31,10 @@
     height: 36px !important;
 }
 
+.btn-close {
+    margin-right: 0.5rem !important;
+}
+
 .form-control {
     padding: 8px;
 }
@@ -69,4 +73,18 @@
             }
         }
     }
+}
+
+.no-arrow::after {
+    display: none;
+}
+
+.no-btn {
+    padding: 0;
+    --bs-btn-padding-x: 0;
+    --bs-btn-padding-y: 0;
+    --bs-btn-font-family: ;
+    --bs-btn-font-size: 1rem;
+    --bs-btn-font-weight: 400;
+    --bs-btn-line-height: 0;
 }

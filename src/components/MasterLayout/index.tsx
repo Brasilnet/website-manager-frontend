@@ -81,7 +81,7 @@ export default function MasterLayout({ children }: Children) {
             {typeof (modal.body) === 'string' ? <span>{modal.body}</span> : modal.body}
           </Modal.Body>
           <Modal.Footer>
-            {modal.buttons ? modal.buttons : <Button variant="secondary" onClick={handleCloseModal}>OK</Button>}
+            {modal.buttons}
           </Modal.Footer>
         </Modal>
       )}

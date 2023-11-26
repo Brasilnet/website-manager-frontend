@@ -1,5 +1,5 @@
 import React from "react";
-import { FaCar, FaDashcube, FaHouse } from "react-icons/fa6";
+import { FaFolderOpen, FaHouse } from "react-icons/fa6";
 import app from "./app";
 
 export default {
@@ -14,11 +14,9 @@ export default {
       href: "/",
     },
     {
-      icon: <FaDashcube size={20} />,
-      title: "Teste",
-      subItems: [
-        { title: "Subitem 1", href: "/dashboard" },
-      ],
+      icon: <FaFolderOpen size={20} />,
+      title: "Arquivos",
+      href: '/storage',
     },
   ],
 };

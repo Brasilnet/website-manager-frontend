@@ -3,6 +3,7 @@ $enable-negative-margins: true;
 @import "~bootstrap/scss/bootstrap";
 @import "~nprogress/nprogress.css";
 @import "bootstrap_custom";
+@import "reactprime_custom.scss";
 // Pages styles
 @import "./pages/login";
 // Layout
@@ -12,3 +13,4 @@ $enable-negative-margins: true;
 @import "./layout/page-content.scss";
 // Components
 @import "./components/navbar-dropdown-menu.scss";
+@import "./components/file.scss";
