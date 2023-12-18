@@ -1,12 +1,12 @@
 {
     "editor.wordBasedSuggestions": "matchingDocuments",
     "files.exclude": {
-        "**/.classpath": false,
-        "**/.factorypath": false,
-        "**/.idea": false,
-        "**/.project": false,
-        "**/.settings": false,
-        "**/.vscode": false,
-        "**/node_modules": false
+        "**/.classpath": true,
+        "**/.factorypath": true,
+        "**/.idea": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.vscode": true,
+        "**/node_modules": true
     }
 }
