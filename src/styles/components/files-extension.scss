@@ -1,0 +1,10 @@
+.files-extension {
+    display: flex;
+    flex-direction: row;
+    gap: .5rem;
+
+    .btn {
+        min-width: 90px;
+        padding: 4px;
+    }
+}

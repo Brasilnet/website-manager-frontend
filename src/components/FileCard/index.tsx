@@ -11,6 +11,11 @@ import handleAxiosError from "src/utils/handleAxiosError";
 
 export default function FileCard(props: IFile) {
 
+  const mimeTypeIcon = {
+    "application/pdf": "far fa-file-pdf",
+    "video": "",
+  };
+
   const deleteFile = async (file: IFile) => {
    try {
     const response = await ApiFetch.delete(`/filesLibrary/delete/${file.id}`);

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { parseCookies } from "nookies";
 
+
 const { "brasilnet-manager.token": token } = parseCookies();
 
 const ApiFetch = axios.create({

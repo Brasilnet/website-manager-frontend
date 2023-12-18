@@ -7,6 +7,9 @@ import "@fortawesome/fontawesome-svg-core/styles.css";
 import 'react-toastify/dist/ReactToastify.css';
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 
+import '@uppy/core/dist/style.min.css';
+import '@uppy/dashboard/dist/style.min.css';
+import '@uppy/drop-target/dist/style.css';
 
 import { ProgressBar } from "@components";
 import { ToastContainer } from 'react-toastify';

@@ -47,6 +47,10 @@ export default function handleAxiosError(
       }) : toast(response.data.errorMessage, { type: 'error' });
     }
 
+    if (response && response.status === 500) {
+      toast(response.data.errorMessage, { type: 'error' });
+    }
+
     if (axiosError.code === 'ERR_NETWORK') {
       toast('Houve um erro na conexão com o servidor, tente novamente mais tarde', { type: 'error' });
     }

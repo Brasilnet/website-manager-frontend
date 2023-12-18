@@ -1,78 +1,134 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FileCard, MasterLayout } from "@components";
-import {
-  Button,
-  Card,
-  Col,
-  Form,
-  InputGroup,
-  Modal,
-  Row,
-} from "react-bootstrap";
+import { Button, Card, Col, Container, Form, InputGroup, Modal } from "react-bootstrap";
 import { AuthContext } from "src/contexts/AuthContext";
 import { GetServerSideProps } from "next";
 import { parseCookies } from "nookies";
 import { FaSearch } from "react-icons/fa";
 import ApiFetch from "src/api";
 import { IUser } from "src/interfaces/IUser";
-import { IFile } from "src/interfaces/IFileCard";
-import { FileUpload } from 'primereact/fileupload';
+import { IFile, IFileResponse } from "src/interfaces/IFileCard";
+import Uppy from "@uppy/core";
+import { Dashboard } from "@uppy/react";
+import { toast } from "react-toastify";
+import handleAxiosError from "src/utils/handleAxiosError";
+import { TablePagination } from "@mui/material";
+import DropTarget from "@uppy/drop-target";
+import { IPaginationColumnFilters } from "src/interfaces/IPagination";
 
 export default function Storage(): JSX.Element {
   const [showAddFilesModal, setShowAddFilesModal] = useState(false);
   const [files, setFiles] = useState<Array<IFile>>([]);
   const [updateList, setUpdateList] = useState<number>(0);
 
+  // Pagination
+  const [page, setPage] = useState<number>(1);
+  const [itensPerPage, setItemsPerPage] = useState<number>(10);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [searchFilter, setSearchFilter] = useState<string>("");
+  const [columnFilters, setColumnFilters] = useState<
+    Array<IPaginationColumnFilters>
+  >([]);
+
   const { user } = useContext(AuthContext);
+
+  const uppy = new Uppy();
+
+  useEffect(() => {
+    if (window) {
+      uppy.use(DropTarget, {
+        target: ".page-content",
+        onDrop: () => uppy.emit("upload"),
+      });
+    }
+
+    return () => {
+      uppy.close();
+    };
+  }, []);
 
   useEffect(() => {
     (async () => {
       const response = await ApiFetch.post("/filesLibrary/pagination", {
-        page: 1,
-        itemsPerPage: 10,
-        searchFilter: "",
-        columnFilters: [],
+        page: page,
+        itemsPerPage: itensPerPage,
+        searchFilter: searchFilter,
+        columnFilters: columnFilters,
         columnSorting: [],
       });
 
-      const files: Array<IFile> = response.data.data;
+      const filesReponse: IFileResponse = response.data;
 
-      setFiles(files);
+      setFiles(filesReponse.data);
+      setTotalItems(filesReponse.total);
     })();
-  }, [updateList]);
+  }, [updateList, page, itensPerPage, searchFilter, columnFilters]);
+
+  uppy.on("upload", () => {
+    uppy.getFiles().forEach(async (file) => {
+      const formData = new FormData();
+      formData.append("files", file.data, file.name);
+
+      try {
+        await ApiFetch.post("/filesLibrary/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        uppy.setFileState(file.id, { progress: { uploadComplete: true } });
+        uppy.removeFile(file.id);
+        setUpdateList((prev) => prev + 1);
+        toast(`Arquivo ${file.name} adicionado com sucesso!`, {
+          type: "success",
+        });
+      } catch (error: unknown) {
+        uppy.setFileState(file.id, { error: "Erro no upload" });
+        handleAxiosError(error);
+      }
+    });
+
+    setShowAddFilesModal(false);
+    uppy.close();
+  });
 
   const handleAddFilesModal = () => setShowAddFilesModal(!showAddFilesModal);
 
-  const uploadFiles = (files) => {
-    console.log(files);
+  const filterFileExtensions = (extension: string) => {
+    const mimeTypes: { [key: string]: string } = {
+      images: "image",
+      pdf: "application/pdf",
+      video: "video",
+    };
+
+    if (extension == "all") {
+      return setColumnFilters([]);
+    }
+
+    const filter: IPaginationColumnFilters = {
+      id: "mimeType",
+      value: mimeTypes[extension],
+    };
+
+    setColumnFilters([filter]);
   };
 
   const ModalAddFiles = () => (
-    <Modal 
+    <Modal
       show={showAddFilesModal}
       onHide={handleAddFilesModal}
       centered
-      size="lg"  
+      size="lg"
     >
       <Modal.Header closeButton>
         <Modal.Title>Adicionar arquivos</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <FileUpload
-          name="demo[]"
-          url="/api/filesLibrary/upload"
-          multiple
-          accept="image/*"
-          maxFileSize={1000000}
-          cancelOptions={{
-            className: 'p-cancel',
-            label: 'Limpar lista',
-          }}
-          uploadOptions={{
-            className: 'p-upload',
-            label: 'Upload',
-          }}
-          chooseLabel="Selecionar"
+        <Dashboard
+          uppy={uppy}
+          proudlyDisplayPoweredByUppy={false}
+          showProgressDetails={true}
+          width={'100%'}
         />
       </Modal.Body>
     </Modal>
@@ -84,7 +140,13 @@ export default function Storage(): JSX.Element {
         <Card.Header className="d-flex align-items-center justify-content-between">
           <Col md="3">
             <InputGroup>
-              <Form.Control placeholder="Pesquise pelo nome do arquivo.." />
+              <Form.Control
+                placeholder="Pesquise pelo nome do arquivo.."
+                onChange={(event) =>
+                  setSearchFilter(event?.currentTarget?.value)
+                }
+                value={searchFilter}
+              />
               <Button variant="outline-primary" style={{ minWidth: 55 }}>
                 <FaSearch size={20} />
               </Button>
@@ -93,9 +155,35 @@ export default function Storage(): JSX.Element {
           <Button onClick={handleAddFilesModal}>Adicionar</Button>
         </Card.Header>
         <Card.Body>
-          <div className="file-list">
-            {files &&
-              files.map((file) => (
+          <div className="files-extension">
+            <Button
+              variant="outline-dark"
+              onClick={() => filterFileExtensions("all")}
+            >
+              Tudo
+            </Button>
+            <Button
+              variant="outline-dark"
+              onClick={() => filterFileExtensions("images")}
+            >
+              Imagens
+            </Button>
+            <Button
+              variant="outline-dark"
+              onClick={() => filterFileExtensions("pdf")}
+            >
+              PDF
+            </Button>
+            <Button
+              variant="outline-dark"
+              onClick={() => filterFileExtensions("video")}
+            >
+              Vídeos
+            </Button>
+          </div>
+          {files?.length > 0 ? (
+            <div className="file-list">
+              {files.map((file) => (
                 <FileCard
                   key={`${file.id}-${file.name}`}
                   id={file.id}
@@ -106,8 +194,51 @@ export default function Storage(): JSX.Element {
                   updateCallback={setUpdateList}
                 />
               ))}
-          </div>
+            </div>
+          ) : (
+            <Container className="p-5 d-flex flex-column justify-content-center align-items-center">
+              <span>Não encontramos nenhum arquivo,</span>
+              <span>faça upload ou remova os filtros.</span>
+            </Container>
+          )}
         </Card.Body>
+        <Card.Footer>
+          <TablePagination
+            sx={{
+              ".MuiTablePagination-displayedRows": {
+                display: "flex",
+                alignItems: "center;",
+                margin: 0,
+              },
+              ".MuiTablePagination-selectLabel": {
+                display: "flex",
+                alignItems: "center;",
+                margin: 0,
+              },
+            }}
+            labelRowsPerPage={'Itens por página'}
+            component="div"
+            rowsPerPageOptions={[10, 50, 100]}
+            rowsPerPage={itensPerPage}
+            count={totalItems}
+            page={page}
+            onPageChange={(_event, page) => {
+              if (page !== 0) {
+                setPage(page);
+              }
+            }}
+            slotProps={{
+              actions: {
+                previousButton: {
+                  disabled: page === 1
+                }
+              }
+            }}
+            onRowsPerPageChange={(event) =>
+              setItemsPerPage(Number(event?.target?.value))
+            }
+          />
+        </Card.Footer>
       </Card>
       <ModalAddFiles />
     </MasterLayout>
