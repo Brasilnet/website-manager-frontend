@@ -21,7 +21,7 @@ jobs:
           password: ${{ secrets.SERVER_PASSWORD }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
-            cd /home/github_actions/website-brasilnet-frontend
+            cd /home/github_actions/website-manager-backend
             git fetch --all
             git reset --hard origin/main
             docker-compose down
