@@ -1,7 +1,7 @@
 FROM node:18
 WORKDIR /website_manager_frontend
 COPY package*.json ./
-RUN npm install
+RUN yarn
 COPY . .
-RUN npm run build
-CMD ["npm", "run", "start"]
+RUN yarn build
+CMD ["yarn", "start"]
