@@ -11,10 +11,28 @@ import handleAxiosError from "src/utils/handleAxiosError";
 
 export default function FileCard(props: IFile) {
 
-  const mimeTypeIcon = {
-    "application/pdf": "far fa-file-pdf",
-    "video": "",
+  const getMimeTypePreviewIcon = (mimeType: string): string => {
+    const mimeTypeIcon: {[key: string]: string} = {
+      "application/pdf": "/assets/img/files/pdf.png",
+      "video": "/assets/img/files/video.png",
+      "text/plain": "/assets/img/files/txt.png",
+      "application/x-msdownload": "/assets/img/files/exe.png",
+    };
+  
+    // Verifica se o mimeType é exatamente igual a alguma das chaves (exceto 'video')
+    if (mimeTypeIcon[mimeType]) {
+      return mimeTypeIcon[mimeType];
+    }
+  
+    // Verifica se o mimeType inclui a palavra 'video'
+    if (mimeType.includes('video')) {
+      return mimeTypeIcon['video'];
+    }
+  
+    return "/assets/img/files/default.png";
   };
+  
+  
 
   const deleteFile = async (file: IFile) => {
    try {
@@ -44,9 +62,7 @@ export default function FileCard(props: IFile) {
   return (
     <div className="file-card">
       <img
-        src={
-          props.mimeType.includes("image") ? props.url : "/assets/img/file.png"
-        }
+        src={props.mimeType.includes("image") ? props.url : getMimeTypePreviewIcon(props.mimeType)}
         alt={props.name}
       />
       <div className="info-box">
@@ -67,7 +83,9 @@ export default function FileCard(props: IFile) {
             </Dropdown.Menu>
           </Dropdown>
         </div>
-        <span>{formatBytes(props.size)}</span>
+        <div className="label-size">
+          <span>{formatBytes(props.size)}</span>
+        </div>
       </div>
     </div>
   );

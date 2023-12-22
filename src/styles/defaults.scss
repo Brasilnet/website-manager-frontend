@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500&display=swap');
+
 html,
 body,
 #__next,
@@ -8,4 +10,15 @@ main {
 
 * {
   box-sizing: border-box;
+}
+
+section {
+  &.page-section {
+    h1 {
+      font-size: 2rem;
+      margin-top: 1.3rem;
+      margin-bottom: 1.5rem;
+      color: #151f27;
+    }
+  }
 }

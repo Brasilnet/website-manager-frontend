@@ -196,7 +196,6 @@ export default function Profile(): JSX.Element {
 }
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const { resolvedUrl } = ctx;
   const { ["brasilnet-manager.token"]: token } = parseCookies(ctx);
 
   if (!token) {
@@ -206,25 +205,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         permanent: false,
       },
     };
-  }
-
-  const response = await ApiFetch.get("/user", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (response.status == 200) {
-    const user: IUser = response.data;
-
-    if (user && !user.permissions.includes(resolvedUrl)) {
-      return {
-        redirect: {
-          destination: "/401",
-          permanent: false,
-        },
-      };
-    }
   }
 
   return {

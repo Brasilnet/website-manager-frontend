@@ -1,13 +1,13 @@
 import React, { useContext, useState, useEffect } from "react";
 import SideBar from "@components/SideBar";
 import { useRouter } from "next/router";
-import { Breadcrumb, Button, Modal } from "react-bootstrap";
-import sidebar from "src/config/sidebar";
+import { Button, Modal } from "react-bootstrap";
 import NavBar from "@components/NavBar";
 import { FaAlignRight, FaBars } from "react-icons/fa";
 import NavBarDropdownMenu from "@components/NavBar/NavBarDropdownMenu";
 import { AuthContext } from "src/contexts/AuthContext";
 import emitter from "src/events/emitter";
+import useSidebarConfig from "@hooks/getSidebarConfig";
 
 interface Children {
   children?: JSX.Element | JSX.Element[] | null;
@@ -33,6 +33,8 @@ export default function MasterLayout({ children }: Children) {
   const router = useRouter();
   const { user } = useContext(AuthContext);
 
+  const { defaultConfig, menuItems } = useSidebarConfig(user);
+
   useEffect(() => {
     setIsClient(true);
 
@@ -52,8 +54,8 @@ export default function MasterLayout({ children }: Children) {
   return (
     <main className="overflow-hidden d-flex flex-row">
       <SideBar
-        defaultConfig={sidebar.defaultConfig}
-        items={sidebar.menuItems}
+        defaultConfig={defaultConfig}
+        items={menuItems}
         isOpen={sideBarIsOpen}
         toggleSideBar={toggleSideBar}
       />

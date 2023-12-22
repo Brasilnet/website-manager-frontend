@@ -1,0 +1,61 @@
+.file-library {
+    .header-options {
+        width: 100%;
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 0.8rem;
+    }
+
+    .btn-show-filters {
+        display: block;
+        width: 100%;
+    }
+
+    .files-extension {
+        display: flex;
+        flex-direction: column;
+        gap: .5rem;
+        background-color: #fff;
+        padding: .5rem;
+        border-radius: $border-radius;
+        box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+    
+        .btn {
+            width: 100%;
+            min-width: 90px;
+            padding: 4px;
+        }
+
+        .dropdown-menu {
+            width: 100%;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .header-options {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-show-filters {
+            display: none;
+        }
+
+        .files-extension {
+            display: flex !important;
+            flex-direction: row;
+            gap: .5rem;
+        
+            .btn {
+                width: auto;
+                min-width: 90px;
+                padding: 4px;
+            }
+    
+            .dropdown-menu {
+                width: min-content;
+            }
+        }
+    }
+}

@@ -1,5 +1,5 @@
 .main-container {
     background-color: rgb(220, 220, 220);
-    width: 100%;
+    width: calc(100% - $sidebar-width-current);
     height: 100%;
 }

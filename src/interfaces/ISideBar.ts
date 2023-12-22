@@ -23,3 +23,12 @@ export interface ISideBarProps {
     isOpen: boolean;
     toggleSideBar: () => void,
 }
+
+export interface ISideBarDefaultConfig {
+    logo: string;
+    icon: string;
+}
+export interface ISideBarConfig {
+    defaultConfig: ISideBarDefaultConfig;
+    menuItems: Array<ISideBarItems>;
+}

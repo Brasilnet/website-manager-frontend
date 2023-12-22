@@ -1,10 +1,20 @@
 import React, { useContext, useEffect, useState } from "react";
 import { FileCard, MasterLayout } from "@components";
-import { Button, Card, Col, Container, Form, InputGroup, Modal } from "react-bootstrap";
+import {
+  Button,
+  Card,
+  Col,
+  Container,
+  Dropdown,
+  Form,
+  InputGroup,
+  Modal,
+  Row,
+} from "react-bootstrap";
 import { AuthContext } from "src/contexts/AuthContext";
 import { GetServerSideProps } from "next";
 import { parseCookies } from "nookies";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaCalendarAlt } from "react-icons/fa";
 import ApiFetch from "src/api";
 import { IUser } from "src/interfaces/IUser";
 import { IFile, IFileResponse } from "src/interfaces/IFileCard";
@@ -15,11 +25,16 @@ import handleAxiosError from "src/utils/handleAxiosError";
 import { TablePagination } from "@mui/material";
 import DropTarget from "@uppy/drop-target";
 import { IPaginationColumnFilters } from "src/interfaces/IPagination";
+import { FieldValues, useForm } from "react-hook-form";
 
 export default function Storage(): JSX.Element {
   const [showAddFilesModal, setShowAddFilesModal] = useState(false);
   const [files, setFiles] = useState<Array<IFile>>([]);
   const [updateList, setUpdateList] = useState<number>(0);
+  
+  const [extension, setExtension] = useState<string|null>('all');
+  const [dateRange, setDateRange] = useState<string|null>(null);
+  const [showFilters, setShowFilters] = useState<boolean>(false);
 
   // Pagination
   const [page, setPage] = useState<number>(1);
@@ -32,7 +47,18 @@ export default function Storage(): JSX.Element {
 
   const { user } = useContext(AuthContext);
 
-  const uppy = new Uppy();
+  const { handleSubmit, register, formState: { errors } } = useForm({
+    criteriaMode: 'all',
+  });
+
+  const uppy = new Uppy({
+    restrictions: {
+      maxFileSize: 10000000,
+      maxNumberOfFiles: 20,
+      minNumberOfFiles: 1,
+      allowedFileTypes: ["image/*", "application/pdf", "video/*"],
+    },
+  });
 
   useEffect(() => {
     if (window) {
@@ -54,7 +80,12 @@ export default function Storage(): JSX.Element {
         itemsPerPage: itensPerPage,
         searchFilter: searchFilter,
         columnFilters: columnFilters,
-        columnSorting: [],
+        columnSorting: [
+          {
+            id: "createdAt",
+            desc: true,
+          },
+        ],
       });
 
       const filesReponse: IFileResponse = response.data;
@@ -64,8 +95,9 @@ export default function Storage(): JSX.Element {
     })();
   }, [updateList, page, itensPerPage, searchFilter, columnFilters]);
 
-  uppy.on("upload", () => {
-    uppy.getFiles().forEach(async (file) => {
+  uppy.on("upload", async () => {
+    const files = uppy.getFiles();
+    const filePromises = files.map(async (file) => {
       const formData = new FormData();
       formData.append("files", file.data, file.name);
 
@@ -76,15 +108,23 @@ export default function Storage(): JSX.Element {
           },
         });
 
+        return file;
+      } catch (error) {
+        console.log(error);
+        handleAxiosError(error);
+        return null;
+      }
+    });
+
+    const uploadedFiles = await Promise.all(filePromises);
+
+    uploadedFiles.forEach((file) => {
+      if (file) {
         uppy.setFileState(file.id, { progress: { uploadComplete: true } });
         uppy.removeFile(file.id);
-        setUpdateList((prev) => prev + 1);
         toast(`Arquivo ${file.name} adicionado com sucesso!`, {
           type: "success",
         });
-      } catch (error: unknown) {
-        uppy.setFileState(file.id, { error: "Erro no upload" });
-        handleAxiosError(error);
       }
     });
 
@@ -93,6 +133,7 @@ export default function Storage(): JSX.Element {
   });
 
   const handleAddFilesModal = () => setShowAddFilesModal(!showAddFilesModal);
+  const handleShowFilters = () => setShowFilters(!showFilters);
 
   const filterFileExtensions = (extension: string) => {
     const mimeTypes: { [key: string]: string } = {
@@ -100,6 +141,8 @@ export default function Storage(): JSX.Element {
       pdf: "application/pdf",
       video: "video",
     };
+
+    setExtension(extension);
 
     if (extension == "all") {
       return setColumnFilters([]);
@@ -111,6 +154,24 @@ export default function Storage(): JSX.Element {
     };
 
     setColumnFilters([filter]);
+  };
+  
+  const onSubmitDatePicker = (data: FieldValues) => {
+    const values = [
+      {
+        '$d': data.startDate,
+      },
+      {
+        '$d': data.endDate,
+      }
+    ];
+
+    setColumnFilters([{
+      id: 'createdAt',
+      value: values,
+    }]);
+
+    setDateRange(`${data.startDate} - ${data.endDate}`);
   };
 
   const ModalAddFiles = () => (
@@ -128,7 +189,7 @@ export default function Storage(): JSX.Element {
           uppy={uppy}
           proudlyDisplayPoweredByUppy={false}
           showProgressDetails={true}
-          width={'100%'}
+          width={"100%"}
         />
       </Modal.Body>
     </Modal>
@@ -136,51 +197,88 @@ export default function Storage(): JSX.Element {
 
   return (
     <MasterLayout>
-      <Card>
+      <Card className="file-library">
         <Card.Header className="d-flex align-items-center justify-content-between">
-          <Col md="3">
-            <InputGroup>
-              <Form.Control
-                placeholder="Pesquise pelo nome do arquivo.."
-                onChange={(event) =>
-                  setSearchFilter(event?.currentTarget?.value)
-                }
-                value={searchFilter}
-              />
-              <Button variant="outline-primary" style={{ minWidth: 55 }}>
-                <FaSearch size={20} />
-              </Button>
-            </InputGroup>
-          </Col>
-          <Button onClick={handleAddFilesModal}>Adicionar</Button>
+          <div className="header-options">
+            <Col className="col-12 col-md-6 col-lg-3">
+              <InputGroup>
+                <Form.Control
+                  placeholder="Pesquise pelo nome do arquivo.."
+                  onChange={(event) =>
+                    setSearchFilter(event?.currentTarget?.value)
+                  }
+                  value={searchFilter}
+                />
+                <Button variant="outline-primary" style={{ minWidth: 55 }}>
+                  <FaSearch size={20} />
+                </Button>
+              </InputGroup>
+            </Col>
+            <Col className="col-1 col-3 d-flex justify-content-md-end">
+              <Button onClick={handleAddFilesModal}>Adicionar</Button>
+            </Col>
+          </div>
         </Card.Header>
         <Card.Body>
-          <div className="files-extension">
+          <Button className="btn-show-filters mb-3" onClick={handleShowFilters}>Filtros</Button>
+
+          <div className={`${!showFilters && 'd-none'} files-extension mb-3`}>
             <Button
-              variant="outline-dark"
+              variant={extension === 'all' ? 'dark' : 'outline-dark'}
               onClick={() => filterFileExtensions("all")}
             >
               Tudo
             </Button>
             <Button
-              variant="outline-dark"
+              variant={extension === 'images' ? 'dark' : 'outline-dark'}
               onClick={() => filterFileExtensions("images")}
             >
               Imagens
             </Button>
             <Button
-              variant="outline-dark"
+              variant={extension === 'pdf' ? 'dark' : 'outline-dark'}
               onClick={() => filterFileExtensions("pdf")}
             >
               PDF
             </Button>
             <Button
-              variant="outline-dark"
+              variant={extension === 'video' ? 'dark' : 'outline-dark'}
               onClick={() => filterFileExtensions("video")}
             >
               Vídeos
             </Button>
+
+            <Dropdown>
+              <Dropdown.Toggle variant="outline-primary no-arrow">
+                <FaCalendarAlt size={15} /> {dateRange || 'Filtrar por Data'}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu>
+                <Form className="p-2" onSubmit={handleSubmit(onSubmitDatePicker)}>
+                  <Form.Group>
+                    <Form.Label>Data de início</Form.Label>
+                    <Form.Control type="date" {...register('startDate')} />
+                  </Form.Group>
+
+                  <Form.Group className="mt-2">
+                    <Form.Label>Data de fim</Form.Label>
+                    <Form.Control type="date" {...register('endDate')} />
+                  </Form.Group>
+
+                  <Form.Group className="mt-2 d-flex flex-column gap-2">
+                    <Button type="submit">Filtrar</Button>
+                    <Button type="reset" variant="danger" onClick={() => {
+                      setColumnFilters([]);
+                      setDateRange(null);
+                    }}>
+                      Limpar Filtros
+                    </Button>
+                  </Form.Group>
+                </Form>
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
+
           {files?.length > 0 ? (
             <div className="file-list">
               {files.map((file) => (
@@ -203,41 +301,43 @@ export default function Storage(): JSX.Element {
           )}
         </Card.Body>
         <Card.Footer>
-          <TablePagination
-            sx={{
-              ".MuiTablePagination-displayedRows": {
-                display: "flex",
-                alignItems: "center;",
-                margin: 0,
-              },
-              ".MuiTablePagination-selectLabel": {
-                display: "flex",
-                alignItems: "center;",
-                margin: 0,
-              },
-            }}
-            labelRowsPerPage={'Itens por página'}
-            component="div"
-            rowsPerPageOptions={[10, 50, 100]}
-            rowsPerPage={itensPerPage}
-            count={totalItems}
-            page={page}
-            onPageChange={(_event, page) => {
-              if (page !== 0) {
-                setPage(page);
-              }
-            }}
-            slotProps={{
-              actions: {
-                previousButton: {
-                  disabled: page === 1
+          {totalItems > 0 && (
+            <TablePagination
+              sx={{
+                ".MuiTablePagination-displayedRows": {
+                  display: "flex",
+                  alignItems: "center;",
+                  margin: 0,
+                },
+                ".MuiTablePagination-selectLabel": {
+                  display: "flex",
+                  alignItems: "center;",
+                  margin: 0,
+                },
+              }}
+              labelRowsPerPage={"Itens por página"}
+              component="div"
+              rowsPerPageOptions={[10, 50, 100]}
+              rowsPerPage={itensPerPage}
+              count={totalItems}
+              page={page}
+              onPageChange={(_event, page) => {
+                if (page !== 0) {
+                  setPage(page);
                 }
+              }}
+              slotProps={{
+                actions: {
+                  previousButton: {
+                    disabled: page === 1,
+                  },
+                },
+              }}
+              onRowsPerPageChange={(event) =>
+                setItemsPerPage(Number(event?.target?.value))
               }
-            }}
-            onRowsPerPageChange={(event) =>
-              setItemsPerPage(Number(event?.target?.value))
-            }
-          />
+            />
+          )}
         </Card.Footer>
       </Card>
       <ModalAddFiles />

@@ -29,7 +29,7 @@ export interface IPaginationProps {
 
 export interface IPaginationColumnFilters {
     id: string;
-    value: string;
+    value: string | Array<any>;
   }
   
   export interface IPaginationColumnSorting {
