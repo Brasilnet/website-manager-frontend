@@ -11,25 +11,40 @@
         width: 100%;
     }
 
-    .files-extension {
+    .filters {
         display: flex;
         flex-direction: column;
-        gap: .5rem;
+        justify-content: center;
+        gap: 1rem;
         background-color: #fff;
-        padding: .5rem;
-        border-radius: $border-radius;
         box-shadow: rgba(0, 0, 0, 0.02) 0px 1px 3px 0px, rgba(27, 31, 35, 0.15) 0px 0px 0px 1px;
+        border-radius: $border-radius;
+        padding: .5rem;
+
+        .files-extension {
+            display: flex;
+            flex-direction: column;
+            gap: .5rem;
+
+            .btn {
+                width: 100%;
+                min-width: 90px;
+                padding: 4px;
+            }
     
-        .btn {
-            width: 100%;
-            min-width: 90px;
-            padding: 4px;
+            .dropdown-menu {
+                width: 100%;
+            }
         }
 
-        .dropdown-menu {
-            width: 100%;
+        .categories {
+            .btn {
+                width: 48px;
+                padding: 4px;
+            }
         }
     }
+    
 
     @media (min-width: 768px) {
         .header-options {
@@ -42,19 +57,29 @@
             display: none;
         }
 
-        .files-extension {
-            display: flex !important;
+        .filters {
             flex-direction: row;
-            gap: .5rem;
+            justify-content: space-between;
+            align-items: center;
+
+            .files-extension {
+                display: flex !important;
+                flex-direction: row;
+                gap: .5rem;
+
+                .btn {
+                    width: auto;
+                    min-width: 90px;
+                    padding: 4px;
+                }
         
-            .btn {
-                width: auto;
-                min-width: 90px;
-                padding: 4px;
+                .dropdown-menu {
+                    width: min-content;
+                }
             }
-    
-            .dropdown-menu {
-                width: min-content;
+
+            .categories {
+
             }
         }
     }

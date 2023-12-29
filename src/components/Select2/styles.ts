@@ -8,6 +8,7 @@ interface OptionType {
 const select2Styles: StylesConfig<OptionType, false> = {
   control: (provided, state) => ({
     ...provided,
+    minWidth: 200,
     borderRadius: 4,
     padding: 2,
     borderColor: state.isFocused ? '#80bdff' : '#e0e0e0',
@@ -16,6 +17,10 @@ const select2Styles: StylesConfig<OptionType, false> = {
       borderColor: state.isFocused ? '#80bdff' : provided.borderColor,
     }
   }),
+  menu: (provided) => ({ 
+    ...provided, 
+    zIndex: 99999
+  })
 };
 
 export default select2Styles;

@@ -102,6 +102,10 @@
       .modal-title {
         font-size: 1.2rem;
       }
+
+      .btn-close {
+        margin: 0;
+      }
     }
     .modal-body {
       padding: 8px;
@@ -198,4 +202,30 @@
   --bs-btn-font-size: 1rem;
   --bs-btn-font-weight: 400;
   --bs-btn-line-height: 0;
+}
+
+.nav-tabs .nav-item {
+  margin-bottom: -1px;
+  border: none;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  color: #333;
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.nav-tabs .nav-link.active {
+  color: #1976D2; 
+  border: none;
+  border-bottom: 2px solid #1976D2; 
+}
+
+.nav-tabs .nav-link:active  {
+  transition: background-color 0.1s ease;
+  background-color: rgba(189,224,247,0.6);
+  color: #333; 
 }

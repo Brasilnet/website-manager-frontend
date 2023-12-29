@@ -14,7 +14,12 @@ export default function useSidebarConfig(user: IUser | null) {
     '/website': {
       icon: <FaReact size={20} />,
       title: "Website",
-      href: '/website',
+      subItems: [
+        {
+          title: 'Home',
+          href: '/website/home',
+        },
+      ]
     },
   };
 

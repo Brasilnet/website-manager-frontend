@@ -5,11 +5,11 @@ export default {
   description: '',
   version: 'v1.0.0',
   logo: {
-    light: 'assets/brand/logo-light.svg',
-    dark: 'assets/brand/logo-dark.svg',
+    light: '/assets/brand/logo-light.svg',
+    dark: '/assets/brand/logo-dark.svg',
   },
   icon: {
-    light: 'assets/brand/icon-light.svg',
+    light: '/assets/brand/icon-light.svg',
     dark: '',
   },
   images: {
